@@ -1,6 +1,7 @@
-import { getRankings } from 'lib/queries';
-import { ok, badRequest, methodNotAllowed } from 'lib/response';
+import { getPageviewMetrics, getSessionMetrics } from 'lib/queries';
+import { ok, badRequest, methodNotAllowed, unauthorized } from 'lib/response';
 import { DOMAIN_REGEX } from 'lib/constants';
+import { allowQuery } from 'lib/auth';
 
 const sessionColumns = ['browser', 'os', 'device', 'country'];
 const pageviewColumns = ['url', 'referrer'];
@@ -26,31 +27,41 @@ function getColumn(type) {
 
 export default async (req, res) => {
   if (req.method === 'GET') {
-    const { id, type, start_at, end_at, domain } = req.query;
+    if (!(await allowQuery(req))) {
+      return unauthorized(res);
+    }
+
+    const { id, type, start_at, end_at, domain, url } = req.query;
+
+    if (domain && !DOMAIN_REGEX.test(domain)) {
+      return badRequest(res);
+    }
+
     const websiteId = +id;
     const startDate = new Date(+start_at);
     const endDate = new Date(+end_at);
 
-    if (
-      type !== 'event' &&
-      !sessionColumns.includes(type) &&
-      !pageviewColumns.includes(type) &&
-      domain &&
-      DOMAIN_REGEX.test(domain)
-    ) {
-      return badRequest(res);
+    if (sessionColumns.includes(type)) {
+      const data = await getSessionMetrics(websiteId, startDate, endDate, type, { url });
+
+      return ok(res, data);
     }
 
-    const rankings = await getRankings(
-      websiteId,
-      startDate,
-      endDate,
-      getColumn(type),
-      getTable(type),
-      domain,
-    );
+    if (type === 'event' || pageviewColumns.includes(type)) {
+      const data = await getPageviewMetrics(
+        websiteId,
+        startDate,
+        endDate,
+        getColumn(type),
+        getTable(type),
+        {
+          domain,
+          url: type !== 'url' && url,
+        },
+      );
 
-    return ok(res, rankings);
+      return ok(res, data);
+    }
   }
 
   return methodNotAllowed(res);

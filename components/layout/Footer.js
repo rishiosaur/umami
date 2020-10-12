@@ -1,22 +1,30 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
 import classNames from 'classnames';
-import Button from 'components/common/Button';
-import Logo from 'assets/logo.svg';
+import { FormattedMessage } from 'react-intl';
+import Link from 'components/common/Link';
 import styles from './Footer.module.css';
+import useVersion from 'hooks/useVersion';
 
 export default function Footer() {
-  const version = process.env.VERSION;
+  const { current } = useVersion();
   return (
     <footer className="container">
-      <div className={classNames(styles.footer, 'row justify-content-center')}>
-        <FormattedMessage id="footer.powered-by" defaultMessage="Powered by" />
-        <a href="https://umami.is">
-          <Button className={styles.button} icon={<Logo />} size="small">
-            <b>umami</b>
-          </Button>
-        </a>
-        <div>{`v${version}`}</div>
+      <div className={classNames(styles.footer, 'row')}>
+        <div className="col-12 col-md-4" />
+        <div className="col-12 col-md-4">
+          <FormattedMessage
+            id="message.powered-by"
+            defaultMessage="Powered by {name}"
+            values={{
+              name: (
+                <Link href="https://umami.is">
+                  <b>umami</b>
+                </Link>
+              ),
+            }}
+          />
+        </div>
+        <div className={classNames(styles.version, 'col-12 col-md-4')}>{`v${current}`}</div>
       </div>
     </footer>
   );

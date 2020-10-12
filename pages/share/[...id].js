@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import Layout from 'components/layout/Layout';
-import WebsiteDetails from 'components/WebsiteDetails';
+import WebsiteDetails from 'components/pages/WebsiteDetails';
 import useFetch from 'hooks/useFetch';
 
 export default function SharePage() {
@@ -14,9 +14,11 @@ export default function SharePage() {
     return null;
   }
 
+  const { websiteId, token } = data;
+
   return (
     <Layout>
-      <WebsiteDetails websiteId={data.website_id} />
+      <WebsiteDetails websiteId={websiteId} token={token} />
     </Layout>
   );
 }

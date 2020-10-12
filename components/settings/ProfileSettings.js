@@ -6,7 +6,11 @@ import Button from 'components/common/Button';
 import Modal from 'components/common/Modal';
 import Toast from 'components/common/Toast';
 import ChangePasswordForm from 'components/forms/ChangePasswordForm';
+import TimezoneSetting from 'components/settings/TimezoneSetting';
 import Dots from 'assets/ellipsis-h.svg';
+import styles from './ProfileSettings.module.css';
+import DateRangeSetting from './DateRangeSetting';
+import useEscapeKey from 'hooks/useEscapeKey';
 
 export default function ProfileSettings() {
   const user = useSelector(state => state.user);
@@ -19,23 +23,37 @@ export default function ProfileSettings() {
     setMessage(<FormattedMessage id="message.save-success" defaultMessage="Saved successfully." />);
   }
 
+  useEscapeKey(() => {
+    setChangePassword(false);
+  });
+
   return (
     <>
       <PageHeader>
         <div>
-          <FormattedMessage id="settings.profile" defaultMessage="Profile" />
+          <FormattedMessage id="label.profile" defaultMessage="Profile" />
         </div>
         <Button icon={<Dots />} size="small" onClick={() => setChangePassword(true)}>
-          <div>
-            <FormattedMessage id="button.change-password" defaultMessage="Change password" />
-          </div>
+          <FormattedMessage id="button.change-password" defaultMessage="Change password" />
         </Button>
       </PageHeader>
-      <dl>
+      <dl className={styles.list}>
         <dt>
           <FormattedMessage id="label.username" defaultMessage="Username" />
         </dt>
         <dd>{user.username}</dd>
+        <dt>
+          <FormattedMessage id="label.timezone" defaultMessage="Timezone" />
+        </dt>
+        <dd>
+          <TimezoneSetting />
+        </dd>
+        <dt>
+          <FormattedMessage id="label.default-date-range" defaultMessage="Default date range" />
+        </dt>
+        <dd>
+          <DateRangeSetting />
+        </dd>
       </dl>
       {changePassword && (
         <Modal
